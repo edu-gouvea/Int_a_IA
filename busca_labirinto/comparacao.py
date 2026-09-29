@@ -91,24 +91,30 @@ def _fmt(valor, formato: str = "{}") -> str:
     return "-" if valor is None else formato.format(valor)
 
 
+CABECALHO = ["Cenário", "Alg.", "L", "Ótimo", "Achou?", "Passos", "Custo",
+             "Nós explorados", "Tempo (ms)", "Memória (KiB)"]
+
+
+def linha_tabela(m: Medicao) -> List[str]:
+    """Valores de uma medição já formatados, na ordem de ``CABECALHO``."""
+    return [
+        m.cenario,
+        m.algoritmo,
+        _fmt(m.limite) if m.algoritmo == "DLS" else "1..d",
+        _fmt(m.profundidade_minima),
+        "sim" if m.encontrou else "não",
+        _fmt(m.passos),
+        _fmt(m.custo, "{:g}"),
+        str(m.nos_explorados),
+        f"{m.tempo_ms:.3f}",
+        f"{m.memoria_kib:.1f}",
+    ]
+
+
 def imprimir_tabela(medicoes: List[Medicao]) -> None:
     """Imprime as medições em uma tabela alinhada no terminal."""
-    cabecalho = ["Cenário", "Alg.", "L", "Ótimo", "Achou?", "Passos", "Custo",
-                 "Nós explorados", "Tempo (ms)", "Memória (KiB)"]
-    linhas = []
-    for m in medicoes:
-        linhas.append([
-            m.cenario,
-            m.algoritmo,
-            _fmt(m.limite) if m.algoritmo == "DLS" else "1..d",
-            _fmt(m.profundidade_minima),
-            "sim" if m.encontrou else "não",
-            _fmt(m.passos),
-            _fmt(m.custo, "{:g}"),
-            str(m.nos_explorados),
-            f"{m.tempo_ms:.3f}",
-            f"{m.memoria_kib:.1f}",
-        ])
+    cabecalho = CABECALHO
+    linhas = [linha_tabela(m) for m in medicoes]
 
     larguras = [max(len(str(x)) for x in col) for col in zip(cabecalho, *linhas)]
     # Colunas numéricas alinhadas à direita.
