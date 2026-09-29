@@ -3,7 +3,9 @@
 Parte prática do trabalho de IA sobre algoritmos de busca: **Busca em
 Profundidade Limitada (DLS)** e **Busca de Aprofundamento Iterativo (IDS)**
 aplicadas a labirintos. Usa só a biblioteca padrão (Python 3.8 ou mais novo),
-sem dependências externas.
+sem dependências externas. A interface gráfica usa o Tkinter, que também faz
+parte da biblioteca padrão, mas precisa de um Python compilado com suporte a Tk
+(veja [Interface gráfica](#interface-gráfica)).
 
 ## Estrutura
 
@@ -15,15 +17,62 @@ busca_labirinto/
   visualizador.py  Animação passo a passo no terminal (ANSI + time.sleep)
   cenarios.py      Os 4 cenários da bateria de experimentos
   comparacao.py    Métricas (tracemalloc, tempo, nós, passos, custo) e tabela
+  gravador.py      Grava a execução da busca em quadros (usado pela interface)
+  interface.py     Interface gráfica em Tkinter (visualizador + comparação)
 tests/
   test_algoritmos.py   Testes automatizados (unittest)
-visualizar.py      Script do visualizador
+interface.py       Script da interface gráfica
+visualizar.py      Script do visualizador no terminal
 comparar.py        Script da tabela comparativa
 ```
 
 ## Como executar
 
 Todos os comandos são rodados a partir da raiz do projeto.
+
+### Interface gráfica
+
+```bash
+python3 interface.py
+```
+
+A janela tem duas abas.
+
+**Visualizador**: anima a DLS ou a IDS resolvendo um labirinto.
+
+- À esquerda ficam o algoritmo, o labirinto (um dos 4 cenários ou um gerado
+  com tamanho, semente, ciclos e terrenos) e o limite L da DLS (vazio = sem
+  limite). O painel *Estado da busca* mostra, a cada passo, o limite L, a
+  iteração (IDS), a profundidade atual, os nós explorados na iteração e no
+  total, o tamanho da fronteira e, no fim, o resultado comparado ao ótimo.
+- Abaixo do labirinto ficam os controles: reiniciar, voltar um passo,
+  iniciar/pausar, avançar um passo e ir para o fim, além da velocidade e de
+  uma barra de posição para pular para qualquer momento da busca.
+- Atalhos: **espaço** inicia/pausa, **←/→** voltam/avançam um passo,
+  **Home/End** vão para o começo/fim.
+
+**Comparação**: roda DLS e IDS nos 4 cenários (o mesmo que `comparar.py`) e
+mostra a tabela e um gráfico de barras DLS × IDS. Dá para escolher a métrica
+(nós explorados, tempo, memória, passos ou custo), ligar a escala logarítmica e
+exportar o resultado em CSV.
+
+Como funciona: a busca roda inteira de uma vez e o `Gravador` guarda cada
+evento (nova iteração, nó expandido, fim) como um quadro. A animação só
+percorre essa lista com `after()` do Tkinter, e por isso dá para pausar e voltar
+sem rodar o algoritmo de novo. Na aba de comparação, os experimentos rodam numa
+thread separada e mandam os resultados à janela por uma fila (`queue.Queue`),
+então a interface não trava.
+
+> **Tkinter no macOS com pyenv.** Se `python3 -c "import tkinter"` der
+> `No module named '_tkinter'`, o Python foi compilado sem Tk. Instale o Tk e
+> recompile o Python:
+>
+> ```bash
+> brew install tcl-tk
+> pyenv uninstall <versão> && pyenv install <versão>
+> ```
+>
+> No Linux, instale o pacote `python3-tk` (Debian/Ubuntu).
 
 ### Visualizador no terminal
 
